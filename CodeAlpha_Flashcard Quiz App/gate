@@ -1,0 +1,190 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+// Pin definitions
+#define IR_SENSOR 2
+#define TRIG 3
+#define ECHO 4
+#define CLOSE_SW 5
+#define OPEN_SW 6
+
+#define IN1 8
+#define IN2 9
+#define ENA 10
+
+#define BUZZER 11
+#define RED_LED 12
+
+long duration;
+int distance;
+
+void setup()
+{
+  pinMode(IR_SENSOR, INPUT);
+  pinMode(TRIG, OUTPUT);
+  pinMode(ECHO, INPUT);
+
+  pinMode(CLOSE_SW, INPUT_PULLUP);
+  pinMode(OPEN_SW, INPUT_PULLUP);
+
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(ENA, OUTPUT);
+
+  pinMode(BUZZER, OUTPUT);
+  pinMode(RED_LED, OUTPUT);
+
+  lcd.init();
+  lcd.backlight();
+
+  lcd.setCursor(0, 0);
+  lcd.print("Railway Gate");
+  lcd.setCursor(0, 1);
+  lcd.print("System Ready");
+  delay(2000);
+}
+
+void loop()
+{
+  // Train detection
+  if (digitalRead(IR_SENSOR) == LOW)
+  {
+    lcd.clear();
+    lcd.print("TRAIN DETECTED");
+    lcd.setCursor(0, 1);
+    lcd.print("Gate Closing");
+
+    closeGate();
+
+    // Wait until train is no longer detected
+    while (digitalRead(IR_SENSOR) == LOW)
+    {
+      checkObstacle();
+      delay(100);
+    }
+
+    lcd.clear();
+    lcd.print("Train Passed");
+    lcd.setCursor(0, 1);
+    lcd.print("Checking Track");
+
+    delay(1000);
+
+    // Check obstacle before opening
+    while (getDistance() < 20)
+    {
+      digitalWrite(BUZZER, HIGH);
+      digitalWrite(RED_LED, HIGH);
+
+      lcd.clear();
+      lcd.print("OBSTACLE");
+      lcd.setCursor(0, 1);
+      lcd.print("Gate Locked");
+
+      delay(300);
+    }
+
+    digitalWrite(BUZZER, LOW);
+    digitalWrite(RED_LED, LOW);
+
+    lcd.clear();
+    lcd.print("Track Clear");
+    lcd.setCursor(0, 1);
+    lcd.print("Gate Opening");
+
+    openGate();
+  }
+}
+
+// Close railway gate
+void closeGate()
+{
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  analogWrite(ENA, 200);
+
+  while (digitalRead(CLOSE_SW) == HIGH)
+  {
+    checkObstacle();
+    delay(50);
+  }
+
+  stopMotor();
+
+  lcd.clear();
+  lcd.print("Gate CLOSED");
+  delay(1000);
+}
+
+// Open railway gate
+void openGate()
+{
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  analogWrite(ENA, 200);
+
+  while (digitalRead(OPEN_SW) == HIGH)
+  {
+    delay(50);
+  }
+
+  stopMotor();
+
+  lcd.clear();
+  lcd.print("Gate OPEN");
+  lcd.setCursor(0, 1);
+  lcd.print("System Ready");
+  delay(1000);
+}
+
+// Stop motor
+void stopMotor()
+{
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  analogWrite(ENA, 0);
+}
+
+// Ultrasonic distance measurement
+int getDistance()
+{
+  digitalWrite(TRIG, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(TRIG, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG, LOW);
+
+  duration = pulseIn(ECHO, HIGH, 30000);
+
+  if (duration == 0)
+    return 999;
+
+  return duration * 0.034 / 2;
+}
+
+// Obstacle detection
+void checkObstacle()
+{
+  distance = getDistance();
+
+  if (distance < 20)
+  {
+    digitalWrite(BUZZER, HIGH);
+    digitalWrite(RED_LED, HIGH);
+
+    lcd.clear();
+    lcd.print("OBSTACLE ALERT");
+    lcd.setCursor(0, 1);
+    lcd.print("Distance:");
+    lcd.print(distance);
+    lcd.print("cm");
+  }
+  else
+  {
+    digitalWrite(BUZZER, LOW);
+    digitalWrite(RED_LED, LOW);
+  }
+}

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Flashcard Quiz App</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            text-align: center;
+        }
+
+        h1 {
+            color: white;
+            font-size: 40px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: white;
+            font-size: 18px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            min-height: 300px;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .question {
+            font-size: 28px;
+            font-weight: bold;
+            color: #222;
+            margin-bottom: 25px;
+        }
+
+        .answer {
+            display: none;
+            font-size: 20px;
+            color: #555;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        .show-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 13px 25px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .show-btn:hover {
+            background: #4f63d2;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .navigation button {
+            background: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .navigation button:hover {
+            background: #eeeeee;
+        }
+
+        #counter {
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .manage {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .manage button {
+            border: none;
+            background: white;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .manage button:hover {
+            background: #eeeeee;
+        }
+
+        @media (max-width: 500px) {
+
+            h1 {
+                font-size: 30px;
+            }
+
+            .question {
+                font-size: 22px;
+            }
+
+            .card {
+                padding: 25px;
+            }
+
+            .navigation button {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>📚 Flashcard Quiz</h1>
+
+        <p class="subtitle">
+            Learn and test your knowledge
+        </p>
+
+        <div class="card">
+
+            <div class="question" id="question">
+                What is HTML?
+            </div>
+
+            <div class="answer" id="answer">
+                HTML stands for HyperText Markup Language.
+            </div>
+
+            <button class="show-btn" onclick="showAnswer()">
+                Show Answer
+            </button>
+
+        </div>
+
+        <div class="navigation">
+
+            <button onclick="previousCard()">
+                ← Previous
+            </button>
+
+            <span id="counter">
+                1 / 5
+            </span>
+
+            <button onclick="nextCard()">
+                Next →
+            </button>
+
+        </div>
+
+        <div class="manage">
+
+            <button onclick="addCard()">
+                ➕ Add Card
+            </button>
+
+            <button onclick="editCard()">
+                ✏️ Edit
+            </button>
+
+            <button onclick="deleteCard()">
+                🗑️ Delete
+            </button>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        let cards = [
+            {
+                question: "What is HTML?",
+                answer: "HTML stands for HyperText Markup Language."
+            },
+            {
+                question: "What is CSS?",
+                answer: "CSS stands for Cascading Style Sheets."
+            },
+            {
+                question: "What is JavaScript?",
+                answer: "JavaScript is used to make web pages interactive."
+            },
+            {
+                question: "What is Python?",
+                answer: "Python is a high-level programming language."
+            },
+            {
+                question: "What is a database?",
+                answer: "A database is an organized collection of data."
+            }
+        ];
+
+        let currentCard = 0;
+
+        function displayCard() {
+
+            document.getElementById("question").textContent =
+                cards[currentCard].question;
+
+            document.getElementById("answer").textContent =
+                cards[currentCard].answer;
+
+            document.getElementById("answer").style.display = "none";
+
+            document.querySelector(".show-btn").textContent =
+                "Show Answer";
+
+            document.getElementById("counter").textContent =
+                (currentCard + 1) + " / " + cards.length;
+        }
+
+
+        function showAnswer() {
+
+            let answer = document.getElementById("answer");
+            let button = document.querySelector(".show-btn");
+
+            if (answer.style.display === "none") {
+
+                answer.style.display = "block";
+                button.textContent = "Hide Answer";
+
+            } else {
+
+                answer.style.display = "none";
+                button.textContent = "Show Answer";
+            }
+        }
+
+
+        function nextCard() {
+
+            currentCard++;
+
+            if (currentCard >= cards.length) {
+                currentCard = 0;
+            }
+
+            displayCard();
+        }
+
+
+        function previousCard() {
+
+            currentCard--;
+
+            if (currentCard < 0) {
+                currentCard = cards.length - 1;
+            }
+
+            displayCard();
+        }
+
+
+        function addCard() {
+
+            let question = prompt("Enter your question:");
+
+            if (question === null || question.trim() === "") {
+                return;
+            }
+
+            let answer = prompt("Enter the answer:");
+
+            if (answer === null || answer.trim() === "") {
+                return;
+            }
+
+            cards.push({
+                question: question,
+                answer: answer
+            });
+
+            currentCard = cards.length - 1;
+
+            displayCard();
+
+            alert("Flashcard added successfully!");
+        }
+
+
+        function editCard() {
+
+            let question = prompt(
+                "Edit question:",
+                cards[currentCard].question
+            );
+
+            if (question === null || question.trim() === "") {
+                return;
+            }
+
+            let answer = prompt(
+                "Edit answer:",
+                cards[currentCard].answer
+            );
+
+            if (answer === null || answer.trim() === "") {
+                return;
+            }
+
+            cards[currentCard].question = question;
+            cards[currentCard].answer = answer;
+
+            displayCard();
+
+            alert("Flashcard updated successfully!");
+        }
+
+
+        function deleteCard() {
+
+            if (cards.length === 1) {
+
+                alert("At least one flashcard is required.");
+
+                return;
+            }
+
+            let confirmDelete = confirm(
+                "Do you want to delete this flashcard?"
+            );
+
+            if (confirmDelete) {
+
+                cards.splice(currentCard, 1);
+
+                if (currentCard >= cards.length) {
+                    currentCard = cards.length - 1;
+                }
+
+                displayCard();
+            }
+        }
+
+
+        displayCard();
+
+    </script>
+
+</body>
+</html>

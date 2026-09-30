@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Automatic Railway Gate Control — Demo Simulation</title>
+<style>
+  :root{
+    --bg:#101820; --panel:#17222d; --panel2:#1e2b38; --line:#2c3e4f;
+    --amber:#ffb703; --red:#e63946; --green:#2ecc71; --steel:#8aa0b3;
+    --text:#eef2f5; --muted:#7b8fa1;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'Segoe UI', Arial, sans-serif; padding:28px 16px 60px;
+  }
+  .wrap{max-width:920px; margin:0 auto;}
+  h1{
+    font-size:22px; letter-spacing:0.5px; margin:0 0 4px; font-weight:700;
+    border-left:5px solid var(--amber); padding-left:12px;
+  }
+  .sub{color:var(--muted); font-size:13px; margin:0 0 24px; padding-left:17px;}
+
+  .scene{
+    background:linear-gradient(180deg,#1a2530 0%, #101820 70%);
+    border:1px solid var(--line); border-radius:10px;
+    padding:0; position:relative; height:220px; overflow:hidden; margin-bottom:18px;
+  }
+  .sky-note{position:absolute; top:10px; left:14px; font-size:11px; color:var(--muted); letter-spacing:1px;}
+  .ground{
+    position:absolute; bottom:0; left:0; right:0; height:70px;
+    background:#22303d; border-top:2px solid #34495e;
+  }
+  .track{
+    position:absolute; bottom:34px; left:0; right:0; height:6px; background:#4a5f70;
+  }
+  .track::before,.track::after{
+    content:''; position:absolute; left:0; right:0; height:2px; background:#5c7285;
+  }
+  .track::before{top:-8px;} .track::after{bottom:-8px;}
+  .sleepers{
+    position:absolute; bottom:26px; left:0; right:0; height:6px;
+    background-image:repeating-linear-gradient(90deg,#5a4632 0 14px, transparent 14px 34px);
+  }
+
+  .train{
+    position:absolute; bottom:36px; left:-160px; width:140px; height:46px;
+    display:flex; align-items:flex-end; transition:left 3.2s linear;
+  }
+  .train .body{
+    width:140px; height:38px; background:#c0392b; border-radius:6px 14px 4px 4px;
+    border:2px solid #7a231a; position:relative;
+  }
+  .train .body::before{
+    content:''; position:absolute; top:6px; left:10px; width:26px; height:16px;
+    background:#bcd8ea; border-radius:2px;
+  }
+  .train .body::after{
+    content:''; position:absolute; top:6px; left:46px; width:26px; height:16px;
+    background:#bcd8ea; border-radius:2px;
+  }
+  .train .wheel{
+    width:12px; height:12px; border-radius:50%; background:#111; position:absolute; bottom:-6px;
+  }
+  .train .w1{left:18px;} .train .w2{left:60px;} .train .w3{left:104px;}
+
+  .post{
+    position:absolute; bottom:40px; width:8px; height:64px; background:#3a4a58; border-radius:2px;
+  }
+  .post.left{left:260px;} .post.right{left:420px;}
+  .barrier{
+    position:absolute; bottom:100px; left:264px; width:150px; height:9px;
+    background:repeating-linear-gradient(90deg,var(--red) 0 16px, var(--text) 16px 32px);
+    border-radius:3px; transform-origin:left center; transition:transform 1.4s ease;
+    box-shadow:0 0 0 1px #111;
+  }
+  .barrier.open{ transform:rotate(-72deg); }
+  .barrier.closed{ transform:rotate(0deg); }
+
+  .signal{
+    position:absolute; bottom:96px; left:230px; display:flex; flex-direction:column; gap:5px;
+  }
+  .signal .lamp{ width:13px; height:13px; border-radius:50%; background:#2a2a2a; border:1px solid #000; }
+  .signal .lamp.buzzer-on{ background:var(--red); box-shadow:0 0 8px var(--red); }
+  .signal .lamp.led-on{ background:var(--red); box-shadow:0 0 10px var(--red); }
+
+  .sensor-beam{
+    position:absolute; bottom:56px; left:420px; width:0; height:2px;
+    background:var(--amber); opacity:0; transition:opacity .3s;
+  }
+  .sensor-beam.active{ opacity:1; width:220px; box-shadow:0 0 6px var(--amber); }
+
+  .obstacle-icon{
+    position:absolute; bottom:36px; left:600px; opacity:0; transform:scale(0.8);
+    transition:opacity .4s, transform .4s; pointer-events:none;
+  }
+  .obstacle-icon.show{ opacity:1; transform:scale(1); }
+  .obstacle-label{
+    position:absolute; bottom:110px; left:560px; font-size:11px; color:var(--red);
+    background:#1a0e0e; border:1px solid var(--red); border-radius:4px; padding:2px 8px;
+    opacity:0; transition:opacity .4s; white-space:nowrap;
+  }
+  .obstacle-label.show{ opacity:1; }
+
+  .grid{ display:grid; grid-template-columns:1.1fr 1fr; gap:16px; }
+  @media(max-width:640px){ .grid{grid-template-columns:1fr;} }
+
+  .panel{
+    background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px;
+  }
+  .panel h2{ font-size:13px; letter-spacing:1px; color:var(--steel); margin:0 0 12px; text-transform:uppercase; font-weight:600;}
+
+  .lcd{
+    background:#0d1a10; border:3px solid #06210c; border-radius:4px; padding:14px 16px;
+    font-family:'Consolas','Courier New',monospace; color:#3ee66b;
+    text-shadow:0 0 4px rgba(62,230,107,0.5); font-size:16px; line-height:1.6;
+    letter-spacing:1px; min-height:64px;
+  }
+  .lcd .row{ white-space:pre; }
+
+  .sensors{ display:flex; flex-direction:column; gap:10px; }
+  .sensor-row{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--panel2); border:1px solid var(--line); border-radius:6px;
+    padding:8px 12px; font-size:13px;
+  }
+  .dot{ width:10px; height:10px; border-radius:50%; background:#3a4a58; display:inline-block; margin-right:8px; }
+  .dot.on{ background:var(--green); box-shadow:0 0 6px var(--green); }
+  .dot.warn{ background:var(--red); box-shadow:0 0 6px var(--red); }
+  .badge{ font-size:11px; color:var(--muted); }
+
+  .controls{ display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; }
+  button{
+    background:var(--panel2); color:var(--text); border:1px solid var(--line);
+    padding:10px 18px; border-radius:6px; font-size:13px; cursor:pointer; font-weight:600;
+    letter-spacing:0.3px; transition:background .15s;
+  }
+  button:hover{ background:#28394a; }
+  button.primary{ background:var(--amber); color:#221a00; border-color:var(--amber); }
+  button.primary:hover{ background:#ffc837; }
+  button.danger{ background:var(--red); color:#fff; border-color:var(--red); }
+  button:disabled{ opacity:0.4; cursor:not-allowed; }
+
+  .log{
+    margin-top:16px; background:#0c1420; border:1px solid var(--line); border-radius:8px;
+    padding:10px 14px; font-size:12px; color:var(--muted); font-family:monospace;
+    max-height:120px; overflow-y:auto;
+  }
+  .log div{ padding:2px 0; }
+  .log .t{ color:var(--steel); margin-right:6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Automatic railway gate control with obstacle detection</h1>
+  <p class="sub">Interactive demo simulation — record your screen while running this for a project demo video</p>
+
+  <div class="scene">
+    <div class="sky-note">TRACK VIEW</div>
+    <div class="sensor-beam" id="beam"></div>
+    <div class="train" id="train"><div class="body"><div class="wheel w1"></div><div class="wheel w2"></div><div class="wheel w3"></div></div></div>
+    <div class="post left"></div>
+    <div class="post right"></div>
+    <div class="signal">
+      <div class="lamp" id="buzzerLamp" title="Buzzer"></div>
+      <div class="lamp" id="ledLamp" title="Red LED"></div>
+    </div>
+    <div class="barrier open" id="barrier"></div>
+    <div class="obstacle-label" id="obstacleLabel"></div>
+    <div class="obstacle-icon" id="obstacleIcon"></div>
+    <div class="sleepers"></div>
+    <div class="track"></div>
+    <div class="ground"></div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <h2>16x2 LCD display (I2C)</h2>
+      <div class="lcd">
+        <div class="row" id="lcdRow1">System Ready      </div>
+        <div class="row" id="lcdRow2">Gate: OPEN        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; margin-top:14px;">
+        <label style="font-size:12px; color:var(--muted);">Obstacle type:</label>
+        <select id="obstacleType" style="background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:6px 10px; font-size:13px;">
+          <option value="human">Human</option>
+          <option value="elephant">Elephant</option>
+          <option value="vehicle">Vehicle</option>
+          <option value="animal">Animal (cattle/dog)</option>
+        </select>
+      </div>
+      <div class="controls">
+        <button class="primary" id="startBtn" onclick="startDemo(false)">Run demo — clear track</button>
+        <button class="danger" id="obstacleBtn" onclick="startDemo(true)">Run demo — with obstacle</button>
+        <button id="resetBtn" onclick="resetSystem()">Reset</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Test individual sensors</h2>
+      <div class="controls" style="margin-top:0;">
+        <button id="testIRBtn" onclick="testSensor('ir')">Test IR train sensor</button>
+        <button id="testUSBtn" onclick="testSensor('us')">Test ultrasonic sensor</button>
+        <button id="testLS1Btn" onclick="testSensor('ls1')">Test limit switch (close)</button>
+        <button id="testLS2Btn" onclick="testSensor('ls2')">Test limit switch (open)</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Sensor &amp; output status</h2>
+      <div class="sensors">
+        <div class="sensor-row"><span><span class="dot" id="dotIR"></span>IR train sensor</span><span class="badge" id="badgeIR">No train</span></div>
+        <div class="sensor-row"><span><span class="dot" id="dotUS"></span>Ultrasonic sensor</span><span class="badge" id="badgeUS">Idle</span></div>
+        <div class="sensor-row"><span><span class="dot" id="dotLS1"></span>Limit switch (close)</span><span class="badge" id="badgeLS1">Not pressed</span></div>
+        <div class="sensor-row"><span><span class="dot" id="dotLS2"></span>Limit switch (open)</span><span class="badge" id="badgeLS2">Pressed</span></div>
+        <div class="sensor-row"><span><span class="dot" id="dotBuzzer"></span>Buzzer + red LED</span><span class="badge" id="badgeBuzzer">Off</span></div>
+        <div class="sensor-row"><span><span class="dot" id="dotMotor"></span>Gate motor (L298N)</span><span class="badge" id="badgeMotor">Stopped</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="log" id="log"></div>
+</div>
+
+<script>
+const els = {
+  train: document.getElementById('train'),
+  barrier: document.getElementById('barrier'),
+  beam: document.getElementById('beam'),
+  buzzerLamp: document.getElementById('buzzerLamp'),
+  ledLamp: document.getElementById('ledLamp'),
+  lcd1: document.getElementById('lcdRow1'),
+  lcd2: document.getElementById('lcdRow2'),
+  dotIR: document.getElementById('dotIR'), badgeIR: document.getElementById('badgeIR'),
+  dotUS: document.getElementById('dotUS'), badgeUS: document.getElementById('badgeUS'),
+  dotLS1: document.getElementById('dotLS1'), badgeLS1: document.getElementById('badgeLS1'),
+  dotLS2: document.getElementById('dotLS2'), badgeLS2: document.getElementById('badgeLS2'),
+  dotBuzzer: document.getElementById('dotBuzzer'), badgeBuzzer: document.getElementById('badgeBuzzer'),
+  dotMotor: document.getElementById('dotMotor'), badgeMotor: document.getElementById('badgeMotor'),
+  startBtn: document.getElementById('startBtn'),
+  obstacleBtn: document.getElementById('obstacleBtn'),
+  testIRBtn: document.getElementById('testIRBtn'),
+  testUSBtn: document.getElementById('testUSBtn'),
+  testLS1Btn: document.getElementById('testLS1Btn'),
+  testLS2Btn: document.getElementById('testLS2Btn'),
+  obstacleIcon: document.getElementById('obstacleIcon'),
+  obstacleLabel: document.getElementById('obstacleLabel'),
+  obstacleType: document.getElementById('obstacleType'),
+  log: document.getElementById('log')
+};
+
+const OBSTACLES = {
+  human: {
+    name: 'Human', distance: '15cm',
+    svg: '<svg width="16" height="40" viewBox="0 0 16 40"><circle cx="8" cy="6" r="5" fill="#f2c48c"/><rect x="4" y="12" width="8" height="16" rx="3" fill="#3b6ea5"/><rect x="2" y="27" width="5" height="12" rx="2" fill="#2e4a63"/><rect x="9" y="27" width="5" height="12" rx="2" fill="#2e4a63"/></svg>'
+  },
+  elephant: {
+    name: 'Elephant', distance: '48cm',
+    svg: '<svg width="64" height="40" viewBox="0 0 64 40"><ellipse cx="32" cy="20" rx="26" ry="14" fill="#8a94a0"/><circle cx="52" cy="14" r="9" fill="#8a94a0"/><path d="M58 18 Q64 26 58 34" stroke="#8a94a0" stroke-width="5" fill="none" stroke-linecap="round"/><rect x="10" y="30" width="6" height="9" rx="2" fill="#6b7480"/><rect x="24" y="30" width="6" height="9" rx="2" fill="#6b7480"/><rect x="38" y="30" width="6" height="9" rx="2" fill="#6b7480"/><ellipse cx="49" cy="10" rx="3.5" ry="4.5" fill="#6b7480"/></svg>'
+  },
+  vehicle: {
+    name: 'Vehicle', distance: '25cm',
+    svg: '<svg width="52" height="28" viewBox="0 0 52 28"><rect x="4" y="10" width="44" height="12" rx="3" fill="#e0a634"/><path d="M12 10 L18 2 H36 L42 10 Z" fill="#e0a634"/><rect x="20" y="4" width="14" height="7" fill="#bcd8ea"/><circle cx="14" cy="23" r="5" fill="#1b1b1b"/><circle cx="38" cy="23" r="5" fill="#1b1b1b"/></svg>'
+  },
+  animal: {
+    name: 'Animal', distance: '20cm',
+    svg: '<svg width="40" height="24" viewBox="0 0 40 24"><rect x="6" y="6" width="26" height="12" rx="5" fill="#a5744a"/><circle cx="33" cy="9" r="6" fill="#a5744a"/><rect x="9" y="17" width="4" height="7" rx="1.5" fill="#7a5738"/><rect x="24" y="17" width="4" height="7" rx="1.5" fill="#7a5738"/></svg>'
+  }
+};
+
+function showObstacle(type){
+  const o = OBSTACLES[type] || OBSTACLES.human;
+  els.obstacleIcon.innerHTML = o.svg;
+  els.obstacleIcon.classList.add('show');
+  els.obstacleLabel.textContent = o.name + ' — ' + o.distance;
+  els.obstacleLabel.classList.add('show');
+  return o;
+}
+function hideObstacle(){
+  els.obstacleIcon.classList.remove('show');
+  els.obstacleLabel.classList.remove('show');
+}
+
+function pad(s){ s = s || ''; return (s + '                ').slice(0,18); }
+function lcd(l1, l2){ els.lcd1.textContent = pad(l1); els.lcd2.textContent = pad(l2); }
+function logMsg(m){
+  const t = new Date().toLocaleTimeString();
+  const row = document.createElement('div');
+  row.innerHTML = '<span class="t">['+t+']</span>' + m;
+  els.log.prepend(row);
+}
+function setDot(dot, badge, state, text){
+  dot.className = 'dot' + (state ? (' ' + state) : '');
+  badge.textContent = text;
+}
+function busy(b){
+  els.startBtn.disabled = b;
+  els.obstacleBtn.disabled = b;
+  els.testIRBtn.disabled = b;
+  els.testUSBtn.disabled = b;
+  els.testLS1Btn.disabled = b;
+  els.testLS2Btn.disabled = b;
+}
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+async function testSensor(kind){
+  busy(true);
+
+  if(kind === 'ir'){
+    logMsg('IR sensor test: simulating a train breaking the beam');
+    lcd('IR Test: OUT=LOW', 'Train Detected');
+    setDot(els.dotIR, els.badgeIR, 'on', 'Train detected');
+    await sleep(1800);
+    setDot(els.dotIR, els.badgeIR, null, 'No train');
+    lcd('IR Test: OUT=HIGH', 'No Train');
+    logMsg('IR sensor test: beam clear, output back to HIGH');
+  }
+
+  else if(kind === 'us'){
+    const type = els.obstacleType.value;
+    logMsg('Ultrasonic sensor test: measuring distance on TRIG/ECHO');
+    setDot(els.dotUS, els.badgeUS, 'on', 'Scanning...');
+    els.beam.classList.add('active');
+    lcd('US Test: 180cm', 'Track Clear');
+    await sleep(1400);
+    const o = showObstacle(type);
+    els.beam.style.background = 'var(--red)';
+    setDot(els.dotUS, els.badgeUS, 'warn', o.name + '!');
+    lcd('US: ' + o.distance + ' ' + o.name.slice(0,6), 'Obstacle! ALERT');
+    els.buzzerLamp.classList.add('buzzer-on');
+    els.ledLamp.classList.add('led-on');
+    setDot(els.dotBuzzer, els.badgeBuzzer, 'warn', 'ON — alert');
+    logMsg('Ultrasonic sensor test: ' + o.name.toLowerCase() + ' detected at ' + o.distance + ', alert triggered');
+    await sleep(2000);
+    hideObstacle();
+    els.beam.classList.remove('active');
+    els.beam.style.background = 'var(--amber)';
+    els.buzzerLamp.classList.remove('buzzer-on');
+    els.ledLamp.classList.remove('led-on');
+    setDot(els.dotBuzzer, els.badgeBuzzer, null, 'Off');
+    setDot(els.dotUS, els.badgeUS, null, 'Idle');
+    lcd('System Ready', 'Gate: OPEN');
+    logMsg('Ultrasonic sensor test: obstacle removed, alert cleared');
+  }
+
+  else if(kind === 'ls1'){
+    logMsg('Limit switch (close) test: gate reaches closed position');
+    lcd('LS Close: HIGH', 'Gate Fully Shut');
+    setDot(els.dotLS1, els.badgeLS1, 'on', 'Pressed');
+    setDot(els.dotLS2, els.badgeLS2, null, 'Not pressed');
+    setDot(els.dotMotor, els.badgeMotor, null, 'Stopped');
+    els.barrier.classList.remove('open');
+    els.barrier.classList.add('closed');
+    await sleep(1800);
+    logMsg('Limit switch (close) test: motor stop signal confirmed');
+    lcd('System Ready', 'Gate: CLOSED');
+  }
+
+  else if(kind === 'ls2'){
+    logMsg('Limit switch (open) test: gate reaches open position');
+    lcd('LS Open: HIGH', 'Gate Fully Open');
+    setDot(els.dotLS2, els.badgeLS2, 'on', 'Pressed');
+    setDot(els.dotLS1, els.badgeLS1, null, 'Not pressed');
+    setDot(els.dotMotor, els.badgeMotor, null, 'Stopped');
+    els.barrier.classList.remove('closed');
+    els.barrier.classList.add('open');
+    await sleep(1800);
+    logMsg('Limit switch (open) test: motor stop signal confirmed');
+    lcd('System Ready', 'Gate: OPEN');
+  }
+
+  busy(false);
+}
+
+async function startDemo(withObstacle){
+  busy(true);
+  resetVisuals();
+  logMsg('Demo started (' + (withObstacle ? 'obstacle scenario' : 'clear track') + ')');
+
+  // 1. Idle
+  lcd('System Ready', 'Gate: OPEN');
+  await sleep(600);
+
+  // 2. IR sensor detects train
+  setDot(els.dotIR, els.badgeIR, 'on', 'Train detected');
+  lcd('Train Approaching', 'Checking track..');
+  logMsg('IR sensor: train detected on approach');
+  els.train.style.transition = 'left 3.2s linear';
+  els.train.style.left = '300px';
+  await sleep(1400);
+
+  // 3. Ultrasonic check
+  setDot(els.dotUS, els.badgeUS, 'on', 'Scanning...');
+  els.beam.classList.add('active');
+  logMsg('Ultrasonic sensor: scanning track for obstacles');
+  await sleep(1000);
+
+  if(withObstacle){
+    const type = els.obstacleType.value;
+    const o = showObstacle(type);
+    setDot(els.dotUS, els.badgeUS, 'warn', o.name + '!');
+    els.beam.style.background = 'var(--red)';
+    els.buzzerLamp.classList.add('buzzer-on');
+    els.ledLamp.classList.add('led-on');
+    setDot(els.dotBuzzer, els.badgeBuzzer, 'warn', 'ON — alert');
+    lcd('! ' + o.name.toUpperCase() + ' ON TRACK', 'Gate stays OPEN');
+    logMsg(o.name + ' detected at ' + o.distance + ' — buzzer and red LED activated, gate held open');
+    await sleep(2600);
+
+    // obstacle clears
+    hideObstacle();
+    els.beam.classList.remove('active');
+    els.beam.style.background = 'var(--amber)';
+    els.buzzerLamp.classList.remove('buzzer-on');
+    els.ledLamp.classList.remove('led-on');
+    setDot(els.dotBuzzer, els.badgeBuzzer, null, 'Off');
+    setDot(els.dotUS, els.badgeUS, 'on', 'Track clear');
+    lcd('Track Clear Now', 'Closing gate..');
+    logMsg(o.name + ' has moved away — resuming gate closure');
+    await sleep(700);
+  } else {
+    setDot(els.dotUS, els.badgeUS, 'on', 'Track clear');
+    lcd('Track Clear', 'Closing gate..');
+    logMsg('No obstacle found — proceeding to close gate');
+    els.beam.classList.remove('active');
+    await sleep(600);
+  }
+
+  // 4. Close gate
+  setDot(els.dotMotor, els.badgeMotor, 'on', 'Closing');
+  els.barrier.classList.remove('open');
+  els.barrier.classList.add('closed');
+  setDot(els.dotLS1, els.badgeLS1, 'on', 'Pressed');
+  setDot(els.dotLS2, els.badgeLS2, null, 'Not pressed');
+  logMsg('L298N driver: motor closing gate barrier');
+  await sleep(1500);
+  setDot(els.dotMotor, els.badgeMotor, null, 'Stopped');
+  lcd('Gate: CLOSED', 'Train Passing..');
+
+  // 5. Train passes
+  els.train.style.left = '760px';
+  await sleep(1800);
+  setDot(els.dotIR, els.badgeIR, null, 'No train');
+  lcd('Train Has Passed', 'Opening gate..');
+  logMsg('IR sensor: train has passed, opening gate');
+
+  // 6. Open gate
+  setDot(els.dotMotor, els.badgeMotor, 'on', 'Opening');
+  els.barrier.classList.remove('closed');
+  els.barrier.classList.add('open');
+  setDot(els.dotLS1, els.badgeLS1, null, 'Not pressed');
+  await sleep(1500);
+  setDot(els.dotMotor, els.badgeMotor, null, 'Stopped');
+  setDot(els.dotLS2, els.badgeLS2, 'on', 'Pressed');
+  lcd('System Ready', 'Gate: OPEN');
+  logMsg('Gate fully open — system back to idle');
+
+  busy(false);
+}
+
+function resetVisuals(){
+  els.train.style.transition = 'none';
+  els.train.style.left = '-160px';
+  void els.train.offsetWidth;
+  els.barrier.classList.remove('closed');
+  els.barrier.classList.add('open');
+  hideObstacle();
+  els.beam.classList.remove('active');
+  els.beam.style.background = 'var(--amber)';
+  els.buzzerLamp.classList.remove('buzzer-on');
+  els.ledLamp.classList.remove('led-on');
+  setDot(els.dotIR, els.badgeIR, null, 'No train');
+  setDot(els.dotUS, els.badgeUS, null, 'Idle');
+  setDot(els.dotLS1, els.badgeLS1, null, 'Not pressed');
+  setDot(els.dotLS2, els.badgeLS2, 'on', 'Pressed');
+  setDot(els.dotBuzzer, els.badgeBuzzer, null, 'Off');
+  setDot(els.dotMotor, els.badgeMotor, null, 'Stopped');
+  lcd('System Ready', 'Gate: OPEN');
+}
+
+function resetSystem(){
+  resetVisuals();
+  els.log.innerHTML = '';
+  logMsg('System reset to idle');
+  busy(false);
+}
+
+resetVisuals();
+logMsg('Simulation loaded — choose a scenario to run');
+</script>
+</body>
+</html>

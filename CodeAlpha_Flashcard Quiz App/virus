@@ -1,0 +1,718 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Viruthika's Little World 💗</title>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        scroll-behavior: smooth;
+    }
+
+    body {
+        font-family: "Trebuchet MS", sans-serif;
+        background: linear-gradient(135deg, #ffe4f0, #eee1ff, #e1f4ff);
+        color: #4b365c;
+        overflow-x: hidden;
+    }
+
+    /* Floating hearts */
+    .heart {
+        position: fixed;
+        bottom: -30px;
+        font-size: 20px;
+        animation: float 8s linear infinite;
+        opacity: 0.7;
+        z-index: -1;
+    }
+
+    @keyframes float {
+        0% {
+            transform: translateY(0) rotate(0deg);
+            opacity: 0;
+        }
+        20% {
+            opacity: 0.8;
+        }
+        100% {
+            transform: translateY(-110vh) rotate(360deg);
+            opacity: 0;
+        }
+    }
+
+    /* Navigation */
+    nav {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(10px);
+        padding: 15px;
+        text-align: center;
+        z-index: 1000;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    }
+
+    nav a {
+        text-decoration: none;
+        color: #8d5b9d;
+        font-weight: bold;
+        margin: 0 12px;
+    }
+
+    nav a:hover {
+        color: #e45b9a;
+    }
+
+    /* Home */
+    .home {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 80px 20px;
+    }
+
+    .home-box {
+        background: rgba(255,255,255,0.65);
+        padding: 50px 30px;
+        border-radius: 30px;
+        box-shadow: 0 10px 35px rgba(120,80,150,0.15);
+        max-width: 800px;
+    }
+
+    .home h1 {
+        font-size: 55px;
+        color: #d94d91;
+        margin-bottom: 20px;
+    }
+
+    .typing {
+        font-size: 22px;
+        color: #70547d;
+        min-height: 35px;
+    }
+
+    .btn {
+        display: inline-block;
+        margin-top: 30px;
+        padding: 14px 28px;
+        background: linear-gradient(45deg, #e98bb7, #a88be8);
+        color: white;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .btn:hover {
+        transform: scale(1.08);
+    }
+
+    /* Sections */
+    section {
+        padding: 90px 8%;
+        text-align: center;
+    }
+
+    section h2 {
+        font-size: 38px;
+        color: #d24c91;
+        margin-bottom: 20px;
+    }
+
+    section > p {
+        max-width: 750px;
+        margin: auto;
+        line-height: 1.8;
+    }
+
+    /* About */
+    .about-card {
+        max-width: 750px;
+        margin: 30px auto;
+        background: rgba(255,255,255,0.75);
+        padding: 30px;
+        border-radius: 25px;
+        box-shadow: 0 8px 25px rgba(100,70,120,0.12);
+    }
+
+    .qualities {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-top: 25px;
+    }
+
+    .quality {
+        background: #fff;
+        padding: 12px 20px;
+        border-radius: 25px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    /* Gallery */
+    .gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 25px;
+        margin-top: 35px;
+    }
+
+    .photo {
+        background: white;
+        padding: 12px;
+        border-radius: 8px;
+        box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+        transform: rotate(-2deg);
+        transition: 0.3s;
+    }
+
+    .photo:nth-child(even) {
+        transform: rotate(2deg);
+    }
+
+    .photo:hover {
+        transform: rotate(0deg) scale(1.05);
+    }
+
+    .photo img {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        border-radius: 5px;
+    }
+
+    .photo p {
+        margin-top: 10px;
+        font-weight: bold;
+    }
+
+    /* Funny Moments */
+    .funny-container {
+        max-width: 650px;
+        margin: 30px auto;
+    }
+
+    .funny-box {
+        background: white;
+        padding: 30px;
+        border-radius: 25px;
+        font-size: 20px;
+        min-height: 100px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+
+    /* Music */
+    .music-box {
+        max-width: 500px;
+        margin: 30px auto;
+        background: rgba(255,255,255,0.8);
+        padding: 30px;
+        border-radius: 30px;
+    }
+
+    .music-icon {
+        font-size: 70px;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        50% {
+            transform: scale(1.15);
+        }
+    }
+
+    /* Timeline */
+    .timeline {
+        max-width: 700px;
+        margin: 40px auto;
+        text-align: left;
+    }
+
+    .timeline-item {
+        background: white;
+        margin: 20px 0;
+        padding: 20px;
+        border-left: 6px solid #d879aa;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+
+    .timeline-item h3 {
+        color: #c55391;
+        margin-bottom: 8px;
+    }
+
+    /* Surprise */
+    .surprise {
+        min-height: 70vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    #surpriseMessage {
+        display: none;
+        max-width: 700px;
+        margin-top: 30px;
+        padding: 35px;
+        background: white;
+        border-radius: 30px;
+        font-size: 22px;
+        line-height: 1.8;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        animation: appear 1s ease;
+    }
+
+    @keyframes appear {
+        from {
+            opacity: 0;
+            transform: scale(0.7);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    footer {
+        padding: 25px;
+        text-align: center;
+        background: rgba(255,255,255,0.6);
+    }
+
+    /* Mobile */
+    @media(max-width:600px) {
+        nav a {
+            margin: 0 5px;
+            font-size: 12px;
+        }
+
+        .home h1 {
+            font-size: 40px;
+        }
+
+        section h2 {
+            font-size: 30px;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<!-- Floating Hearts -->
+<div class="heart" style="left:10%; animation-delay:1s;">💗</div>
+<div class="heart" style="left:25%; animation-delay:3s;">💕</div>
+<div class="heart" style="left:45%; animation-delay:0s;">💖</div>
+<div class="heart" style="left:65%; animation-delay:2s;">💜</div>
+<div class="heart" style="left:85%; animation-delay:4s;">💗</div>
+
+<!-- Navigation -->
+<nav>
+    <a href="#home">Home</a>
+    <a href="#about">About</a>
+    <a href="#memories">Memories</a>
+    <a href="#funny">Funny</a>
+    <a href="#music">Vibe</a>
+    <a href="#timeline">Journey</a>
+    <a href="#surprise">Surprise</a>
+</nav>
+
+
+<!-- HOME -->
+<section class="home" id="home">
+    <div class="home-box">
+
+        <h1>🌸 Viruthika's Little World 🌸</h1>
+
+        <div class="typing" id="typing"></div>
+
+        <a href="#about" class="btn">
+            Enter the Memories 💕
+        </a>
+
+    </div>
+</section>
+
+
+<!-- ABOUT -->
+<section id="about">
+
+    <h2>💌 About Viruthika</h2>
+
+    <div class="about-card">
+
+        <p>
+            Viruthika is not just a friend...
+            she is a collection of beautiful memories,
+            crazy laughs, unforgettable moments and
+            endless conversations. 💗
+        </p>
+
+        <div class="qualities">
+
+            <div class="quality">🌸 Caring</div>
+            <div class="quality">😂 Funny</div>
+            <div class="quality">✨ Special</div>
+            <div class="quality">💖 Kind</div>
+            <div class="quality">🌙 Cute</div>
+            <div class="quality">🦋 Amazing</div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- MEMORIES -->
+<section id="memories">
+
+    <h2>📸 Our Memories</h2>
+
+    <p>
+        Every picture has a story...
+        and every story has a memory. 💕
+    </p>
+
+    <div class="gallery">
+
+        <div class="photo">
+            <img src="https://picsum.photos/400/400?random=1">
+            <p>🌸 Beautiful Day</p>
+        </div>
+
+        <div class="photo">
+            <img src="https://picsum.photos/400/400?random=2">
+            <p>😂 Crazy Moments</p>
+        </div>
+
+        <div class="photo">
+            <img src="https://picsum.photos/400/400?random=3">
+            <p>💖 Best Memory</p>
+        </div>
+
+        <div class="photo">
+            <img src="https://picsum.photos/400/400?random=4">
+            <p>✨ Unforgettable</p>
+        </div>
+
+    </div>
+
+    <p style="margin-top:25px;">
+        Replace these pictures with your own photos! 📷
+    </p>
+
+</section>
+
+
+<!-- FUNNY MOMENTS -->
+<section id="funny">
+
+    <h2>😂 Our Funny Moments</h2>
+
+    <p>
+        Friendship without laughing at random things
+        is not friendship! 😆
+    </p>
+
+    <div class="funny-container">
+
+        <div class="funny-box" id="funnyText">
+            Click the button to reveal a random memory! 👀
+        </div>
+
+        <button class="btn" onclick="randomMemory()">
+            Random Memory 😂
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- MUSIC -->
+<section id="music">
+
+    <h2>🎵 Our Vibe</h2>
+
+    <div class="music-box">
+
+        <div class="music-icon">🎧</div>
+
+        <h3>Our Friendship Playlist</h3>
+
+        <p style="margin-top:15px;">
+            Some songs become special because
+            they remind us of special people. 💕
+        </p>
+
+        <button class="btn" onclick="playMusic()">
+            🎶 Play Our Vibe
+        </button>
+
+        <p id="musicStatus" style="margin-top:15px;"></p>
+
+    </div>
+
+</section>
+
+
+<!-- TIMELINE -->
+<section id="timeline">
+
+    <h2>💖 Our Friendship Journey</h2>
+
+    <div class="timeline">
+
+        <div class="timeline-item">
+            <h3>🌱 First Meeting</h3>
+            <p>
+                Two strangers met...
+                and a beautiful friendship began.
+            </p>
+        </div>
+
+        <div class="timeline-item">
+            <h3>🤝 Became Friends</h3>
+            <p>
+                Slowly the conversations became longer
+                and the friendship became stronger.
+            </p>
+        </div>
+
+        <div class="timeline-item">
+            <h3>😂 First Crazy Moment</h3>
+            <p>
+                The moment when laughing together
+                became a daily habit!
+            </p>
+        </div>
+
+        <div class="timeline-item">
+            <h3>📸 Beautiful Memories</h3>
+            <p>
+                Photos, conversations, jokes and
+                moments that will always stay special.
+            </p>
+        </div>
+
+        <div class="timeline-item">
+            <h3>💗 Today</h3>
+            <p>
+                Still creating new memories...
+                and hopefully many more to come.
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- SURPRISE -->
+<section class="surprise" id="surprise">
+
+    <h2>🎁 A Little Surprise</h2>
+
+    <p>
+        Don't click this button... 👀
+    </p>
+
+    <button class="btn" onclick="showSurprise()">
+        ✨ Don't Click Me ✨
+    </button>
+
+    <div id="surpriseMessage">
+
+        💗 Okay okay... you found it! 💗
+
+        <br><br>
+
+        Viruthika, some people come into our life
+        as strangers and slowly become unforgettable
+        memories.
+
+        <br><br>
+
+        This little website is just a tiny collection
+        of the memories that make our friendship special.
+
+        <br><br>
+
+        🌸 Keep smiling.
+        Keep being amazing.
+        And let's create many more memories together! 🦋
+
+        <br><br>
+
+        <b>Forever a beautiful memory in my little world. 💕</b>
+
+    </div>
+
+</section>
+
+
+<!-- FOOTER -->
+<footer>
+
+    Made with 💗 for Viruthika 🌸
+
+    <br>
+
+    © 2026 | Our Little Friendship World
+
+</footer>
+
+
+<script>
+
+    /* Typing Effect */
+
+    const text =
+        "A little website for a very special friend... 💕";
+
+    let index = 0;
+
+    function typingEffect() {
+
+        if(index < text.length) {
+
+            document.getElementById("typing").innerHTML +=
+                text.charAt(index);
+
+            index++;
+
+            setTimeout(typingEffect, 60);
+        }
+    }
+
+    typingEffect();
+
+
+    /* Random Funny Memories */
+
+    const memories = [
+
+        "😂 Remember that time we laughed for absolutely no reason?",
+
+        "🤣 One look at each other and suddenly we start laughing!",
+
+        "👀 That one inside joke nobody else understands!",
+
+        "😂 We planned to be serious... and failed in 2 minutes.",
+
+        "💗 Some of our best memories started with 'just one small joke'.",
+
+        "😆 Friendship level: laughing at the same joke 100 times!"
+
+    ];
+
+    function randomMemory() {
+
+        let random =
+            Math.floor(Math.random() * memories.length);
+
+        document.getElementById("funnyText").innerHTML =
+            memories[random];
+
+    }
+
+
+    /* Music Button */
+
+    function playMusic() {
+
+        document.getElementById("musicStatus").innerHTML =
+            "🎵 Imagine our favourite song playing here... 💕";
+
+    }
+
+
+    /* Surprise */
+
+    function showSurprise() {
+
+        document.getElementById("surpriseMessage").style.display =
+            "block";
+
+        createConfetti();
+
+    }
+
+
+    /* Simple Confetti */
+
+    function createConfetti() {
+
+        for(let i = 0; i < 30; i++) {
+
+            let confetti =
+                document.createElement("div");
+
+            confetti.innerHTML =
+                ["💗","💕","✨","🌸","💜","🦋"]
+                [Math.floor(Math.random() * 6)];
+
+            confetti.style.position = "fixed";
+            confetti.style.left =
+                Math.random() * 100 + "vw";
+
+            confetti.style.top = "-20px";
+            confetti.style.fontSize = "25px";
+            confetti.style.zIndex = "2000";
+
+            document.body.appendChild(confetti);
+
+            let animation =
+                confetti.animate(
+
+                    [
+                        {
+                            transform:"translateY(0) rotate(0deg)",
+                            opacity:1
+                        },
+
+                        {
+                            transform:
+                            `translateY(100vh) rotate(360deg)`,
+                            opacity:0
+                        }
+                    ],
+
+                    {
+                        duration:
+                        2000 + Math.random() * 2000
+                    }
+
+                );
+
+            animation.onfinish = () => {
+                confetti.remove();
+            };
+
+        }
+
+    }
+
+</script>
+
+</body>
+</html>
+```
