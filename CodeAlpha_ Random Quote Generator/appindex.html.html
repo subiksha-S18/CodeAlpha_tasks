@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Random Quote Generator</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .quote-card {
+            width: 90%;
+            max-width: 650px;
+
+            background: white;
+
+            padding: 45px;
+
+            border-radius: 25px;
+
+            text-align: center;
+
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+        }
+
+        .title {
+            font-size: 36px;
+            color: #333;
+
+            margin-bottom: 25px;
+        }
+
+        .quote-symbol {
+            font-size: 70px;
+            color: #667eea;
+
+            line-height: 60px;
+        }
+
+        #quote {
+            font-size: 24px;
+            line-height: 1.6;
+
+            color: #444;
+
+            margin: 20px 0;
+        }
+
+        #author {
+            font-size: 18px;
+            font-weight: bold;
+
+            color: #777;
+
+            margin-bottom: 30px;
+        }
+
+        .new-quote {
+            background: #667eea;
+            color: white;
+
+            border: none;
+
+            padding: 15px 35px;
+
+            border-radius: 30px;
+
+            font-size: 17px;
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.3s;
+        }
+
+        .new-quote:hover {
+            background: #4f5ed0;
+
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 600px) {
+
+            .quote-card {
+                padding: 30px 20px;
+            }
+
+            .title {
+                font-size: 28px;
+            }
+
+            #quote {
+                font-size: 19px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="quote-card">
+
+        <h1 class="title">✨ Random Quote</h1>
+
+        <div class="quote-symbol">“</div>
+
+        <p id="quote">
+            Loading quote...
+        </p>
+
+        <p id="author">
+            — Unknown
+        </p>
+
+        <button class="new-quote" onclick="newQuote()">
+            New Quote
+        </button>
+
+    </div>
+
+
+    <script>
+
+        const quotes = [
+            {
+                text: "The only way to do great work is to love what you do.",
+                author: "Steve Jobs"
+            },
+
+            {
+                text: "Success is not final, failure is not fatal.",
+                author: "Winston Churchill"
+            },
+
+            {
+                text: "Believe you can and you're halfway there.",
+                author: "Theodore Roosevelt"
+            },
+
+            {
+                text: "It always seems impossible until it's done.",
+                author: "Nelson Mandela"
+            },
+
+            {
+                text: "The future depends on what you do today.",
+                author: "Mahatma Gandhi"
+            },
+
+            {
+                text: "Dream big and dare to fail.",
+                author: "Norman Vincent Peale"
+            },
+
+            {
+                text: "Every moment is a fresh beginning.",
+                author: "T. S. Eliot"
+            }
+        ];
+
+
+        function newQuote() {
+
+            const randomIndex =
+                Math.floor(Math.random() * quotes.length);
+
+            document.getElementById("quote").textContent =
+                quotes[randomIndex].text;
+
+            document.getElementById("author").textContent =
+                "— " + quotes[randomIndex].author;
+        }
+
+
+        // Show quote when app opens
+        newQuote();
+
+    </script>
+
+</body>
+</html>
